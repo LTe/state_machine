@@ -4,11 +4,13 @@ module StateMachine
     UnexpectedTransition = Class.new(StandardError)
 
     module ClassMethods
-      attr_accessor :possible_transitions, :name
+      attr_accessor :possible_transitions, :name, :guards
 
       def event(name, &block)
         self.name = name
-        self.possible_transitions ||= {}
+        self.possible_transitions       ||= {}
+        self.guards                     ||= {}
+        self.guards[name]               = {}
         self.possible_transitions[name] = {}
 
         if block_given?
@@ -20,11 +22,15 @@ module StateMachine
       end
 
       def transitions(options = {})
-        from = Array(options[:from])
-        to   = options[:to]
+        from  = Array(options[:from])
+        to    = options[:to]
+        guard = options[:when] || proc { true }
 
-        raise InvalidDefinition if from.empty? && to.nil?
+        if from.empty? && to.nil? || !((from + [to]) - states).empty?
+          raise InvalidDefinition
+        end
 
+        guards[name][to] = guard
         possible_transitions[name][to] ||= []
         possible_transitions[name][to] += from
         possible_transitions[name][to].uniq!
@@ -36,11 +42,23 @@ module StateMachine
 
       def define_event_method(name, to)
         define_method("can_#{name}?") do
-          self.class.possible_transitions[name][to].include?(state)
+          self.class.possible_transitions[name][to].include?(state) &&
+            instance_eval(&self.class.guards[name][to])
         end
 
         define_method("#{name}!") do
-          return self.state = to if public_send("can_#{name}?")
+          if public_send("can_#{name}?")
+            state.tap do |state|
+              public_send("before_#{name}") if respond_to?("before_#{name}")
+              public_send("enter_#{to}")    if respond_to?("enter_#{to}")
+              self.state = to
+              public_send("leave_#{state}") if respond_to?("leave_#{state}")
+              public_send("after_#{name}")  if respond_to?("after_#{name}")
+            end
+
+            return
+          end
+
           raise UnexpectedTransition
         end
       end

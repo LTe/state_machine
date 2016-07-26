@@ -16,6 +16,9 @@ RSpec/ExampleLength:
 RSpec/InstanceVariable:
   Enabled: false
 
+RSpec/DescribeClass:
+  Enabled: false
+
 # Metrics
 
 Metrics:

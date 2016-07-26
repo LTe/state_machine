@@ -56,6 +56,14 @@ RSpec.describe StateMachine::Event do
         subject.sonic!
         expect(subject.running?).to be_truthy
       end
+
+      it "does not allow to define transition from non existed state" do
+        expect do
+          test_class.event :not_allowed do
+            transitions from: [:not_allowed, :running], to: :wrong
+          end
+        end.to raise_error(StateMachine::Event::InvalidDefinition)
+      end
     end
   end
 
