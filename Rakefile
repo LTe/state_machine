@@ -5,6 +5,31 @@ require 'rubocop/rake_task'
 require 'graphviz'
 require 'state_machine'
 
+class Example
+  include StateMachine
+
+  state :standing, initial: true
+  state :walking
+  state :running
+  state :supersonic
+
+  event :walk do
+    transitions from: :standing, to: :walking
+  end
+
+  event :run do
+    transitions from: :walking, to: :running
+  end
+
+  event :sonic do
+    transitions from: [:standing, :walking], to: :supersonic
+  end
+
+  event :stop do
+    transitions from: [:supersonic, :running, :walking], to: :standing
+  end
+end
+
 RuboCop::RakeTask.new
 
 RSpec::Core::RakeTask.new(:spec) do |spec|
@@ -12,50 +37,29 @@ RSpec::Core::RakeTask.new(:spec) do |spec|
   spec.pattern = FileList['spec/**/*_spec.rb']
 end
 
-desc "Generate states graph"
-task :graphviz do
-  class Example
-    include StateMachine
+def graphviz(machine)
+  graphviz = GraphViz.new(:G, type: :digraph)
+  states   = {}
 
-    state :standing, initial: true
-    state :walking
-    state :running
-    state :supersonic
+  machine.states.each { |state| states[state] = graphviz.add_nodes(state.to_s) }
 
-    event :walk do
-      transitions from: :standing, to: :walking
-    end
-
-    event :run do
-      transitions from: :walking, to: :running
-    end
-
-    event :sonic do
-      transitions from: [:standing, :walking], to: :supersonic
-    end
-
-    event :stop do
-      transitions from: [:supersonic, :running, :walking], to: :standing
-    end
-  end
-
-  g      = GraphViz.new(:G, :type => :digraph)
-  states = {}
-
-  Example.states.each { |state| states[state] = g.add_nodes(state.to_s) }
-
-  transitions = Example.possible_transitions.values
+  transitions = machine.possible_transitions.values
 
   transitions.each do |transition|
     transition.keys.each do |to|
       transition.values.flatten.each do |from|
-        g.add_edges(states[from], states[to])
+        graphviz.add_edges(states[from], states[to])
       end
     end
   end
 
-  g.output( :png => "states.png" )
+  graphviz.output(png: "states.png")
   `open states.png`
+end
+
+desc "Generate states graph"
+task :graphviz do
+  graphviz(Example)
 end
 
 task default: [:rubocop, :spec]
