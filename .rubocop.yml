@@ -1,0 +1,68 @@
+require: rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 2.3
+  Exclude:
+    - '*.gemspec'
+
+# RSpec
+
+RSpec/AnyInstance:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/InstanceVariable:
+  Enabled: false
+
+# Metrics
+
+Metrics:
+  Enabled: false
+
+# Lint
+
+Lint/DefEndAlignment:
+  Enabled: false
+
+Lint/EndAlignment:
+  Enabled: false
+
+# Style
+
+Style/AccessModifierIndentation:
+  EnforcedStyle: outdent
+
+Style/Alias:
+  EnforcedStyle: prefer_alias_method
+
+Style/ClosingParenthesisIndentation:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/ElseAlignment:
+  Enabled: false
+
+Style/IndentationWidth:
+  Enabled: false
+
+Style/ParallelAssignment:
+  Enabled: false
+
+Style/SignalException:
+  EnforcedStyle: only_raise
+
+Style/StringLiterals:
+  Enabled: false
+
+Style/TrailingCommaInArguments:
+  Enabled: false
+
+Style/TrailingCommaInLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
