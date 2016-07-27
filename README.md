@@ -20,6 +20,8 @@ Or install it yourself as:
 
 To run test execute `rake`.
 
+To generate graph run `rake graphviz`. File named `states.png` will be generated.
+
 `Coverage report generated for RSpec to /Users/lite/work/state_machine/coverage. 199 / 199 LOC (100.0%) covered.`
 
 ## Usage
